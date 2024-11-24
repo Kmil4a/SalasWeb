@@ -11,6 +11,7 @@ import {
   Input,
 } from "reactstrap";
 import useForm from "../hooks/useForm";
+import Swal from "sweetalert2";
 
 const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
   const { formData, handleInputChange, handleSubmit } = useForm(
@@ -31,6 +32,14 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
   const { name, capacity } = formData;
 
   const createSala = async (formData) => {
+    Swal.fire({
+      title: "Creando sala...",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      willOpen: () => {
+        Swal.showLoading();
+      },
+    });
     const response = await fetch("http://127.0.0.1:8000/api/room", {
       method: "POST",
       headers: {
@@ -41,12 +50,21 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
     if (response.ok) {
       getData();
       toggle();
+      Swal.fire("Sala creada", "", "success");
     } else {
-      console.log("Error al crear la sala");
+      Swal.fire("Error al crear la sala", "", "error");
     }
   };
 
   const editarSala = async (formData) => {
+    Swal.fire({
+      title: "Editando sala...",
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      willOpen: () => {
+        Swal.showLoading();
+      },
+    });
     const response = await fetch(`http://127.0.0.1:8000/api/room/${sala.id}`, {
       method: "PUT",
       headers: {
@@ -57,6 +75,9 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
     if (response.ok) {
       getData();
       toggle();
+      Swal.fire("Sala editada", "", "success");
+    } else {
+      Swal.fire("Error al editar la sala", "", "error");
     }
   };
 

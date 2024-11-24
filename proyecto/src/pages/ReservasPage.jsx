@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import TableReservas from "../components/TableReservas";
+import Navbar from "../components/Navbar";
 
 const ReservasPage = () => {
   const [reservas, setReservas] = useState([]);
@@ -19,8 +20,9 @@ const ReservasPage = () => {
   };
 
   return (
-    <div className="reservas-container">
+    <div className="page_container">
       <h1 id="titulo">Mis Reservas</h1>
+      <Navbar />
       <TableReservas reservas={reservas} />
     </div>
   );

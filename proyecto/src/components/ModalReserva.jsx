@@ -1,10 +1,29 @@
 import React, { useState } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from "reactstrap";
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+} from "reactstrap";
 
-const ModalReserva = ({ isEdit, modal, toggle, reserva, fetchReservas }) => {
-  const [formData, setFormData] = useState(
-    reserva || { room: "", date: "", time: "", confirmed: false }
-  );
+const ModalReserva = ({
+  isEdit = false,
+  modal,
+  toggle,
+  sala,
+  fetchReservas,
+  salas = [],
+}) => {
+  const [formData, setFormData] = useState({
+    motivo: "",
+    sala: sala.id,
+    date: "",
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,22 +53,32 @@ const ModalReserva = ({ isEdit, modal, toggle, reserva, fetchReservas }) => {
     }
   };
 
+  console.log(salas);
   return (
     <Modal isOpen={modal} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {isEdit ? "Editar Reserva" : "Crear Reserva"}
+        {isEdit ? "Editar" : "Crear nueva"} reserva
       </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
             <Label for="room">Sala</Label>
             <Input
-              type="number"
+              type="select"
               name="room"
               id="room"
               value={formData.room}
               onChange={handleChange}
-            />
+            >
+              <option value="" disabled>
+                Selecciona una sala
+              </option>
+              {salas.map((sala) => (
+                <option key={sala.id} value={sala.id}>
+                  {sala.name}
+                </option>
+              ))}
+            </Input>
           </FormGroup>
           <FormGroup>
             <Label for="date">Fecha</Label>
