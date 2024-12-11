@@ -19,11 +19,13 @@ const ReservasPage = () => {
     }
   };
 
+  console.log(reservas);
+
   return (
     <div className="page_container">
       <h1 id="titulo">Mis Reservas</h1>
       <Navbar />
-      <TableReservas reservas={reservas} />
+      <TableReservas getData={fetchReservas} reservas={reservas} />
     </div>
   );
 };

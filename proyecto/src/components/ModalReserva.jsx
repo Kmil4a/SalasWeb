@@ -1,63 +1,112 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
+  Button,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Button,
-  Form,
   FormGroup,
+  Form,
   Label,
   Input,
 } from "reactstrap";
+import useForm from "../hooks/useForm";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
+import BloqueHorario from "./BloqueHorario";
 
-const ModalReserva = ({
-  isEdit = false,
-  modal,
-  toggle,
-  sala,
-  fetchReservas,
-  salas = [],
-}) => {
-  const [formData, setFormData] = useState({
-    motivo: "",
-    sala: sala.id,
-    date: "",
-  });
+const ModalReserva = ({ modal, toggle, isEdit, sala, salas = [] }) => {
+  const [bloquesHorarios, setBloquesHorarios] = useState([
+    { start: "08:00", end: "09:00", checked: false, available: true },
+    { start: "09:00", end: "10:00", checked: false, available: true },
+    { start: "10:00", end: "11:00", checked: false, available: false },
+    { start: "11:00", end: "12:00", checked: false, available: true },
+    { start: "12:00", end: "13:00", checked: false, available: true },
+    { start: "13:00", end: "14:00", checked: false, available: true },
+    { start: "14:00", end: "15:00", checked: false, available: true },
+    { start: "15:00", end: "16:00", checked: false, available: false },
+    { start: "16:00", end: "17:00", checked: false, available: true },
+    { start: "17:00", end: "18:00", checked: false, available: true },
+  ]);
+  const navigate = useNavigate();
+  const { formData, handleInputChange, handleSubmit } = useForm(
+    {
+      room: sala.id || "",
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+      start_time: "",
+      end_time: "",
+      confirmed: false,
+      canceled: false,
+    },
+    (formData) => {
+      if (isEdit) {
+        editarSala(formData);
+      } else {
+        createReserva(formData);
+      }
+    }
+  );
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+  const { room, description, date, start_time, end_time } = formData;
+
+  useEffect(() => {
+    // Verificar qué bloque está seleccionado y actualizar el estado acumulativamente
+    const bloqueSeleccionado = bloquesHorarios.find((bloque) => bloque.checked);
+
+    if (bloqueSeleccionado) {
+      handleInputChange((prevState) => ({
+        ...prevState,
+        end_time: bloqueSeleccionado.end,
+        start_time: bloqueSeleccionado.start,
+      }));
+    }
+  }, [bloquesHorarios]);
+
+  const validateForm = () => {
+    if (
+      room === "" ||
+      description === "" ||
+      date === "" ||
+      start_time === "" ||
+      end_time === ""
+    ) {
+      Swal.fire("Todos los campos son obligatorios", "", "error");
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const url = isEdit
-      ? `http://127.0.0.1:8000/api/reservas/${reserva.id}`
-      : "http://127.0.0.1:8000/api/reservas";
-    const method = isEdit ? "PUT" : "POST";
-
+  const createReserva = async (formData) => {
+    if (!validateForm()) return;
     try {
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
+      console.log(formData);
+      const response = await fetch("http://127.0.0.1:8000/api/reservas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
-      fetchReservas();
-      toggle();
+      console.log(response);
+      const data = await response.json();
+      if (data) {
+        Swal.fire({
+          icon: "success",
+          title: "Reserva creada con éxito",
+        });
+        toggle();
+        navigate("/reservas");
+      }
     } catch (error) {
-      console.error("Error al guardar la reserva:", error);
+      console.error("Error:", error);
     }
   };
 
-  console.log(salas);
   return (
     <Modal isOpen={modal} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {isEdit ? "Editar" : "Crear nueva"} reserva
+        {isEdit ? "Editar" : "Crear nueva"} Reserva
       </ModalHeader>
       <ModalBody>
         <Form>
@@ -67,8 +116,8 @@ const ModalReserva = ({
               type="select"
               name="room"
               id="room"
-              value={formData.room}
-              onChange={handleChange}
+              value={room}
+              onChange={handleInputChange}
             >
               <option value="" disabled>
                 Selecciona una sala
@@ -81,41 +130,50 @@ const ModalReserva = ({
             </Input>
           </FormGroup>
           <FormGroup>
-            <Label for="date">Fecha</Label>
+            <Label for="description">Motivo</Label>
             <Input
-              type="date"
-              name="date"
-              id="date"
-              value={formData.date}
-              onChange={handleChange}
+              id="description"
+              name="description"
+              placeholder=""
+              type="text"
+              value={description}
+              onChange={handleInputChange}
             />
           </FormGroup>
           <FormGroup>
-            <Label for="time">Hora</Label>
+            <Label for="date">Fecha</Label>
             <Input
-              type="time"
-              name="time"
-              id="time"
-              value={formData.time}
-              onChange={handleChange}
+              min={new Date().toISOString().split("T")[0]}
+              id="date"
+              name="date"
+              placeholder=""
+              type="date"
+              value={date}
+              onChange={handleInputChange}
             />
           </FormGroup>
-          <FormGroup check>
-            <Label check>
-              <Input
-                type="checkbox"
-                name="confirmed"
-                checked={formData.confirmed}
-                onChange={handleChange}
-              />
-              Confirmado
-            </Label>
+          <FormGroup>
+            <Label>Selecciona horario</Label>
+            <div className="bloques_horario_container">
+              {bloquesHorarios.map((bloque, index) => (
+                <BloqueHorario
+                  index={index}
+                  key={index}
+                  start={bloque.start}
+                  end={bloque.end}
+                  checked={bloque.checked}
+                  available={bloque.available}
+                  setBloquesHorarios={setBloquesHorarios}
+                  bloquesHorarios={bloquesHorarios}
+                />
+              ))}
+            </div>
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" onClick={handleSubmit}>
-          Guardar
+        <Button type="submit" color="primary" onClick={handleSubmit}>
+          {isEdit ? "Editar" : "Crear"}
         </Button>{" "}
         <Button color="secondary" onClick={toggle}>
           Cancelar

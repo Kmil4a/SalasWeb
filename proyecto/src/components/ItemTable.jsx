@@ -28,7 +28,7 @@ const ItemTable = ({ sala, handleEdit, getData, handleReserva }) => {
       if (result.isConfirmed) {
         try {
           const response = await fetch(
-            `http://localhost:3001/salas/${sala.id}`,
+            `http://127.0.0.1:8000/api/room/${sala.id}`,
             {
               method: "DELETE",
             }
@@ -66,12 +66,8 @@ const ItemTable = ({ sala, handleEdit, getData, handleReserva }) => {
             ...
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem text onClick={() => handleEdit(sala)}>
-              Editar
-            </DropdownItem>
-            <DropdownItem text onClick={onDelete}>
-              Eliminar
-            </DropdownItem>
+            <DropdownItem onClick={() => handleEdit(sala)}>Editar</DropdownItem>
+            <DropdownItem onClick={onDelete}>Eliminar</DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </td>

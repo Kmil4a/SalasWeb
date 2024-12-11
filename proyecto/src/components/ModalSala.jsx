@@ -31,7 +31,20 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
 
   const { name, capacity } = formData;
 
+  const validateForm = () => {
+    if (name === "" || capacity === "") {
+      Swal.fire("Todos los campos son obligatorios", "", "error");
+      return false;
+    }
+    if (capacity < 1) {
+      Swal.fire("La capacidad debe ser mayor a 0", "", "error");
+      return false;
+    }
+    return true;
+  };
+
   const createSala = async (formData) => {
+    if (!validateForm()) return;
     Swal.fire({
       title: "Creando sala...",
       allowOutsideClick: false,
@@ -57,6 +70,7 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
   };
 
   const editarSala = async (formData) => {
+    if (!validateForm()) return;
     Swal.fire({
       title: "Editando sala...",
       allowOutsideClick: false,
@@ -91,6 +105,7 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
           <FormGroup>
             <Label for="name">Nombre</Label>
             <Input
+              required
               id="name"
               name="name"
               placeholder=""
@@ -102,6 +117,7 @@ const ModalSala = ({ modal, toggle, getData, isEdit, sala }) => {
           <FormGroup>
             <Label for="capacity">Capacidad</Label>
             <Input
+              required
               id="capacity"
               name="capacity"
               placeholder=""
